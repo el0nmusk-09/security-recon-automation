@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  security-recon:
+    build: .
+    container_name: security-recon-monitor
+    environment:
+      - TARGETS=${TARGETS:-example.com}
+      - INTERVAL=${INTERVAL:-300}
+      - SLACK_WEBHOOK=${SLACK_WEBHOOK}
+      - DISCORD_WEBHOOK=${DISCORD_WEBHOOK}
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    restart: unless-stopped
+    command: python3 monitor.py ${TARGETS}
+
+  web-dashboard:
+    build: .
+    container_name: recon-dashboard
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+    command: python3 dashboard.py
+    depends_on:
+      - security-recon
